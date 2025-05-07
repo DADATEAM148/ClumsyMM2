@@ -1,147 +1,106 @@
--- ClumsyMM2 - Enhanced Skin Changer with More Skins (Knives, Pistols, and Characters)
+local HttpService = game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 
-local skins = {
-    knife = {
-        ["Default"] = {id = "rbxassetid://1234567890", image = "rbxassetid://1234567890"},
-        ["Dragon Blade"] = {id = "rbxassetid://9876543210", image = "rbxassetid://9876543210"},
-        ["Ice Blade"] = {id = "rbxassetid://1357911131", image = "rbxassetid://1357911131"},
-        ["Flame Blade"] = {id = "rbxassetid://4567891234", image = "rbxassetid://4567891234"},
-        ["Emerald Blade"] = {id = "rbxassetid://5566778899", image = "rbxassetid://5566778899"},
-        ["Shadow Blade"] = {id = "rbxassetid://2233445566", image = "rbxassetid://2233445566"},
-        ["Golden Blade"] = {id = "rbxassetid://1029384756", image = "rbxassetid://1029384756"},
-    },
-    character = {
-        ["Default"] = {id = "rbxassetid://2468013579", image = "rbxassetid://2468013579"},
-        ["Camo Hat"] = {id = "rbxassetid://1122334455", image = "rbxassetid://1122334455"},
-        ["Pirate Hat"] = {id = "rbxassetid://5566778899", image = "rbxassetid://5566778899"},
-        ["Witch Hat"] = {id = "rbxassetid://1001122334", image = "rbxassetid://1001122334"},
-        ["Fire Helmet"] = {id = "rbxassetid://7878787878", image = "rbxassetid://7878787878"},
-        ["Viking Helmet"] = {id = "rbxassetid://1234567891", image = "rbxassetid://1234567891"},
-        ["Space Helmet"] = {id = "rbxassetid://9988776655", image = "rbxassetid://9988776655"},
-    },
-    pistol = {
-        ["Default"] = {id = "rbxassetid://1122334455", image = "rbxassetid://1122334455"},
-        ["Golden Pistol"] = {id = "rbxassetid://1234567890", image = "rbxassetid://1234567890"},
-        ["Laser Pistol"] = {id = "rbxassetid://9876543210", image = "rbxassetid://9876543210"},
-        ["Zombie Pistol"] = {id = "rbxassetid://1357911131", image = "rbxassetid://1357911131"},
-        ["Silver Pistol"] = {id = "rbxassetid://6677889900", image = "rbxassetid://6677889900"},
-    }
-}
+-- UI
+local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.Name = "DADAServers"
 
--- GUI Setup for Skin Changer (Including Pistols)
-local skinMenu = Instance.new("Frame", mainFrame)
-skinMenu.Size = UDim2.new(0, 250, 0, 350)
-skinMenu.Position = UDim2.new(0, 10, 0, 220)
-skinMenu.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-local UICorner = Instance.new("UICorner", skinMenu)
-UICorner.CornerRadius = UDim.new(0, 8)
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0, 350, 0, 400)
+frame.Position = UDim2.new(0.5, -175, 0.5, -200)
+frame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+frame.Active = true
+frame.Draggable = true
 
-local title = Instance.new("TextLabel", skinMenu)
-title.Size = UDim2.new(1, 0, 0, 20)
-title.Position = UDim2.new(0, 10, 0, 10)
-title.Text = "Select Skin"
-title.TextColor3 = Color3.fromRGB(0, 255, 170)
+local uicorner = Instance.new("UICorner", frame)
+uicorner.CornerRadius = UDim.new(0, 12)
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1, 0, 0, 40)
+title.Text = "🌐 DADA Server Browser"
+title.TextColor3 = Color3.fromRGB(255, 255, 100)
+title.Font = Enum.Font.GothamBold
+title.TextScaled = true
 title.BackgroundTransparency = 1
-title.TextSize = 18
 
--- Knife Skins buttons with images
-local knifeButtonContainer = Instance.new("Frame", skinMenu)
-knifeButtonContainer.Size = UDim2.new(1, 0, 0, 100)
-knifeButtonContainer.Position = UDim2.new(0, 10, 0, 40)
+local refresh = Instance.new("TextButton", frame)
+refresh.Size = UDim2.new(0.4, 0, 0, 30)
+refresh.Position = UDim2.new(0.05, 0, 0, 50)
+refresh.Text = "🔁 Обновить"
+refresh.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+refresh.TextColor3 = Color3.fromRGB(255, 255, 255)
+refresh.Font = Enum.Font.Gotham
+refresh.TextScaled = true
+Instance.new("UICorner", refresh).CornerRadius = UDim.new(0, 6)
 
-local function createKnifeButton(skinName, yPos, imageId)
-    local btn = Instance.new("TextButton", knifeButtonContainer)
-    btn.Size = UDim2.new(1, -20, 0, 30)
-    btn.Position = UDim2.new(0, 10, 0, yPos)
-    btn.Text = skinName
-    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-    btn.TextColor3 = Color3.fromRGB(0, 255, 170)
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 16
-    btn.MouseButton1Click:Connect(function()
-        applyKnifeSkin(skinName)
-    end)
+local scroll = Instance.new("ScrollingFrame", frame)
+scroll.Size = UDim2.new(1, -20, 1, -100)
+scroll.Position = UDim2.new(0, 10, 0, 90)
+scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+scroll.BackgroundTransparency = 1
+scroll.ScrollBarThickness = 6
 
-    local corner = Instance.new("UICorner", btn)
-    corner.CornerRadius = UDim.new(0, 8)
+-- Функция запроса серверов
+local function getServers()
+	scroll:ClearAllChildren()
+	local servers = {}
+	local gameId = game.PlaceId
+	local nextPage = "https://games.roblox.com/v1/games/"..gameId.."/servers/Public?sortOrder=Desc&limit=100"
 
-    -- Add Image next to button
-    local img = Instance.new("ImageLabel", btn)
-    img.Size = UDim2.new(0, 30, 0, 30)
-    img.Position = UDim2.new(1, 5, 0, 0)
-    img.Image = imageId
-    img.BackgroundTransparency = 1
+	while nextPage do
+		local success, result = pcall(function()
+			return HttpService:JSONDecode(game:HttpGet(nextPage))
+		end)
+		if not success then break end
+		for _, server in ipairs(result.data) do
+			if server.playing < server.maxPlayers then
+				table.insert(servers, server)
+			end
+		end
+		nextPage = result.nextPageCursor and "https://games.roblox.com/v1/games/"..gameId.."/servers/Public?sortOrder=Desc&limit=100&cursor="..result.nextPageCursor or nil
+	end
+
+	-- Отображение
+	local y = 0
+	for i, server in ipairs(servers) do
+		local serverFrame = Instance.new("Frame", scroll)
+		serverFrame.Size = UDim2.new(1, -10, 0, 40)
+		serverFrame.Position = UDim2.new(0, 0, 0, y)
+		serverFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+		Instance.new("UICorner", serverFrame).CornerRadius = UDim.new(0, 6)
+
+		local label = Instance.new("TextLabel", serverFrame)
+		label.Size = UDim2.new(0.6, 0, 1, 0)
+		label.Text = "👥 "..server.playing.."/"..server.maxPlayers.." | Ping: "..(server.ping or "???")
+		label.BackgroundTransparency = 1
+		label.TextColor3 = Color3.fromRGB(255, 255, 255)
+		label.Font = Enum.Font.Gotham
+		label.TextScaled = true
+
+		local join = Instance.new("TextButton", serverFrame)
+		join.Size = UDim2.new(0.35, 0, 0.8, 0)
+		join.Position = UDim2.new(0.63, 0, 0.1, 0)
+		join.Text = "Join"
+		join.TextColor3 = Color3.fromRGB(255, 255, 100)
+		join.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+		join.Font = Enum.Font.GothamBold
+		join.TextScaled = true
+		Instance.new("UICorner", join).CornerRadius = UDim.new(0, 6)
+
+		join.MouseButton1Click:Connect(function()
+			TeleportService:TeleportToPlaceInstance(gameId, server.id, player)
+		end)
+
+		y = y + 45
+	end
+
+	scroll.CanvasSize = UDim2.new(0, 0, 0, y + 10)
 end
 
-local yOffset = 0
-for skinName, skin in pairs(skins.knife) do
-    createKnifeButton(skinName, yOffset, skin.image)
-    yOffset = yOffset + 35
-end
+-- Кнопка обновить
+refresh.MouseButton1Click:Connect(getServers)
 
--- Character Skins buttons with images
-local characterButtonContainer = Instance.new("Frame", skinMenu)
-characterButtonContainer.Size = UDim2.new(1, 0, 0, 100)
-characterButtonContainer.Position = UDim2.new(0, 10, 0, 150)
-
-local function createCharacterButton(skinName, yPos, imageId)
-    local btn = Instance.new("TextButton", characterButtonContainer)
-    btn.Size = UDim2.new(1, -20, 0, 30)
-    btn.Position = UDim2.new(0, 10, 0, yPos)
-    btn.Text = skinName
-    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-    btn.TextColor3 = Color3.fromRGB(0, 255, 170)
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 16
-    btn.MouseButton1Click:Connect(function()
-        applyCharacterSkin(skinName)
-    end)
-
-    local corner = Instance.new("UICorner", btn)
-    corner.CornerRadius = UDim.new(0, 8)
-
-    -- Add Image next to button
-    local img = Instance.new("ImageLabel", btn)
-    img.Size = UDim2.new(0, 30, 0, 30)
-    img.Position = UDim2.new(1, 5, 0, 0)
-    img.Image = imageId
-    img.BackgroundTransparency = 1
-end
-
-yOffset = 0
-for skinName, skin in pairs(skins.character) do
-    createCharacterButton(skinName, yOffset, skin.image)
-    yOffset = yOffset + 35
-end
-
--- Pistol Skins buttons with images
-local pistolButtonContainer = Instance.new("Frame", skinMenu)
-pistolButtonContainer.Size = UDim2.new(1, 0, 0, 100)
-pistolButtonContainer.Position = UDim2.new(0, 10, 0, 260)
-
-local function createPistolButton(skinName, yPos, imageId)
-    local btn = Instance.new("TextButton", pistolButtonContainer)
-    btn.Size = UDim2.new(1, -20, 0, 30)
-    btn.Position = UDim2.new(0, 10, 0, yPos)
-    btn.Text = skinName
-    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-    btn.TextColor3 = Color3.fromRGB(0, 255, 170)
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 16
-    btn.MouseButton1Click:Connect(function()
-        applyPistolSkin(skinName)
-    end)
-
-    local corner = Instance.new("UICorner", btn)
-    corner.CornerRadius = UDim.new(0, 8)
-
-    -- Add Image next to button
-    local img = Instance.new("ImageLabel", btn)
-    img.Size = UDim2.new(0, 30, 0, 30)
-    img.Position = UDim2.new(1, 5, 0, 0)
-    img.Image = imageId
-    img.BackgroundTransparency = 1
-end
-
-yOffset = 0
-for skin
+-- Первый запуск
+getServers()
